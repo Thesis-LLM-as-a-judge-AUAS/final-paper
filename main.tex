@@ -1,10 +1,9 @@
-
-\documentclass[sigconf]{acmart}
+\documentclass[sigconf, authoryear]{acmart}
 %%
 %% \BibTeX command to typeset BibTeX logo in the docs
 \AtBeginDocument{%
-  \providecommand\BibTeX{{%
-    Bib\TeX}}}
+    \providecommand\BibTeX{{%
+        Bib\TeX}}}
 
 %% Rights management information.  This information is sent to you
 %% when you complete the rights form.  These commands have SAMPLE
@@ -17,8 +16,8 @@
 \acmDOI{XXXXXXX.XXXXXXX}
 %% These commands are for a PROCEEDINGS abstract or paper.
 \acmConference[Conference acronym 'XX]{Make sure to enter the correct
-  conference title from your rights confirmation email}{June 03--05,
-  2018}{Woodstock, NY}
+conference title from your rights confirmation email}{June 03--05,
+    2018}{Woodstock, NY}
 %%
 %%  Uncomment \acmBooktitle if the title of the proceedings is different
 %%  from ``Proceedings of ...''!
@@ -34,7 +33,7 @@
 %%
 %% The "title" command has an optional parameter,
 %% allowing the author to define a "short title" to be used in page headers.
-\title{LLM-as-a-judge]}
+\title{LLM-as-a-judge}
 
 %%
 %% The "author" command and its associated commands are used to define
@@ -45,23 +44,23 @@
 
 \author{Mokrov Semen}
 \affiliation{%
-  \institution{Amsterdam University of Applied Science}
-  \city{Amsterdam}
-  \country{The Netherlands}}
+    \institution{Amsterdam University of Applied Science}
+    \city{Amsterdam}
+    \country{The Netherlands}}
 \email{semen.mokrov@gmail.com}
 
 \author{Deep Kayal}
 \affiliation{%
-  \institution{Amsterdam University of Applied Science}
-  \city{London}
-  \country{The United Kingdom}}
+    \institution{Amazon Research}
+    \city{London}
+    \country{The United Kingdom}}
 \email{_}
 
 \author{Riccardo Pinosio}
 \affiliation{%
-  \institution{Amsterdam University of Applied Science}
-  \city{Amsterdam}
-  \country{The Netherlands}}
+    \institution{Amsterdam University of Applied Science}
+    \city{Amsterdam}
+    \country{The Netherlands}}
 \email{_}
 
 %%
@@ -76,7 +75,7 @@
 %% The abstract is a short summary of the work to be presented in the
 %% article.
 \begin{abstract}
-  Here the abstract
+    Here the abstract
 \end{abstract}
 
 %%
@@ -84,13 +83,13 @@
 %% Please copy and paste the code instead of the example below.
 %%
 \begin{CCSXML}
-<ccs2012>
- <concept>
-  <concept_id>00000000.0000000.0000000</concept_id>
-  <concept_desc>Do Not Use This Code, Generate the Correct Terms for Your Paper</concept_desc>
-  <concept_significance>500</concept_significance>
- </concept>
-</ccs2012>
+    <ccs2012>
+    <concept>
+    <concept_id>00000000.0000000.0000000</concept_id>
+    <concept_desc>Do Not Use This Code, Generate the Correct Terms for Your Paper</concept_desc>
+    <concept_significance>500</concept_significance>
+    </concept>
+    </ccs2012>
 \end{CCSXML}
 
 \ccsdesc[500]{Do Not Use This Code~Generate the Correct Terms for Your Paper}
@@ -102,35 +101,111 @@
 %% Keywords. The author(s) should pick words that accurately describe
 %% the work being presented. Separate the keywords with commas.
 \keywords{Do, Not, Us, This, Code, Put, the, Correct, Terms, for,
-  Your, Paper}
+    Your, Paper}
 
 %%
 %% This command processes the author and affiliation and title
 %% information and builds the first part of the formatted document.
 \maketitle
 
+
 \section{Introduction}
 Here the introduction
 
-\section{Related Work}
 
-\subsection{Large Language Models as Evaluators}
+\section{Related Work}\label{sec:related-work}
 
-\section{Problems In Current Systems}
+\subsection{Large Language Models as Evaluators}\label{subsec:large-language-models-as-evaluators}
 
-\subsection{Position Bias}
+\subsubsection{Introduction to LLM Evaluators}
 
-\subsection{Length Bias}
+Large Language Models (LLMs) are increasingly being used as automated evaluators for open-ended text generation tasks, providing a scalable alternative to slow and costly human judgment.
+Recent benchmarks and leaderboards for chatbots and text generation often rely on powerful LLMs (such as GPT-4) to rank or score model outputs in place of humans.
+For instance, the Vicuna Chatbot evaluation pipeline employs GPT-4 to compare responses in a pairwise manner, achieving evaluation agreements on par with human annotators on many queries.
+Researchers have even built interactive frameworks like \textit{EvalGen} \cite{evalgen} that leverage LLMs to suggest evaluation criteria and generate test queries for model outputs, with a human-in-the-loop to refine these criteria.
+These approaches demonstrated the potential of LLM-as-a-judge systems: a strong LLM can approximate human evaluation reasonably well (e.g., GPT-4’s judgments agree with human preferences roughly 75–80\% of the time on multi-turn dialog tasks) \cite{mtbench}.
+As a result, LLM evaluators have quickly become a central tool for comparing models and tuning them to human-like performance.
 
-\subsection{Cost Problem}
+\subsubsection{Evaluation Paradigms}
 
-\section{Combined Bias Solving Approach}
 
-\section{Experiments}
+LLM-as-a-Judge evaluations mostly employ two paradigms: pointwise and pairwise evaluations.
 
-\section{Conclusions}
 
-\section*{Limitations}
+\paragraph{Pointwise Evaluation}
 
+
+In pointwise evaluation, an LLM assesses a single response independently, assigning a score based on predefined criteria such as relevance, coherence, or factual accuracy.
+This method is straightforward and allows for fine-grained analysis of individual responses.
+However, it may suffer from inconsistencies due to the subjective nature of scoring and the lack of comparative context \cite{evalgen}.
+
+
+\paragraph{Pairwise Evaluation}
+
+
+Pairwise evaluation involves presenting the LLM with two responses to the same prompt and asking it to determine which one is better according to specific criteria \cite{liusie2024llmcomparativeassessmentzeroshot}.
+This comparative approach can mitigate some biases inherent in pointwise evaluations and often aligns more closely with human judgment.
+In score-based pairwise comparison, the LLM assigns each response a numerical score based on evaluation criteria such as coherence, helpfulness, or relevance, and then ranks them by comparing the scores \cite{liu2024aligning}.
+This method allows for fine-grained differentiation between responses while retaining the benefits of comparative judgment.
+
+\subsubsection{Benchmarks Utilizing LLM-as-a-Judge}
+
+
+Several benchmarks have been developed to standardize the evaluation of LLM outputs using the LLM-as-a-Judge paradigm.
+
+
+\paragraph{MT-Bench}
+
+
+MT-Bench is a multi-turn benchmark designed to assess the conversational abilities of LLMs.
+It evaluates models on their capacity to maintain context, follow instructions, and provide informative responses over multiple dialogue turns.
+MT-Bench employs GPT-4 as the judge, leveraging its advanced understanding to score model responses.
+The benchmark includes an Elo rating system derived from pairwise comparisons, offering a dynamic leaderboard that reflects the relative performance of various models\cite{mtbench}.
+
+
+\paragraph{AlpacaEval}
+
+
+AlpacaEval focuses on single-turn instruction-following tasks, evaluating models based on their ability to generate helpful and accurate responses.
+It uses GPT-4 as an automatic evaluator to compare model outputs against reference responses.
+AlpacaEval provides win-rate statistics and supports a leaderboard that ranks models accordingly.
+The benchmark has been validated against a substantial set of human annotations, ensuring its reliability and relevance\cite{alpaca_eval}.
+
+
+\paragraph{Chatbot Arena}
+
+
+Chatbot Arena is a platform that combines human and LLM-based evaluations to rank conversational agents.
+It utilizes pairwise comparisons, where human annotators or LLM judges select the better response between two options.
+The results contribute to an Elo rating system, providing a comprehensive leaderboard that reflects both human and automated assessments.
+Chatbot Arena serves as a valuable resource for understanding the comparative performance of various chatbots in real-world scenarios\cite{mtbench}.
+
+
+\subsection{Problems in Current Systems}\label{subsec:problems-in-current-systems}
+
+\subsubsection{Position Bias}
+
+Position bias refers to the tendency of LLM-based evaluators to favor responses based on their position in a prompt during pairwise comparisons.
+Studies have shown that models like GPT-4 often prefer the first response presented, regardless of content quality\cite{shi2024judging}.
+This bias can compromise the fairness and reliability of evaluations.
+To address this, frameworks such as PORTIA have been developed, which align similar content across candidate answers to mitigate position bias effectively\cite{li-etal-2024-split}.
+
+\subsubsection{Length Bias}
+
+Length bias occurs when LLM evaluators disproportionately favor longer responses, associating verbosity with higher quality.
+This can lead to inflated evaluations for unnecessarily lengthy outputs.
+Research has demonstrated that longer responses often receive higher preference scores, even when shorter responses are equally or more informative\cite{hu2024explaining}.
+
+\subsubsection{Cost Problem}
+
+Employing state-of-the-art large language models (LLMs) as evaluators in LLM-as-a-Judge frameworks introduces significant computational costs.
+High-performance models like GPT-4 entail substantial expenses per token, rendering large-scale evaluations financially heavy.
+Simpler queries are handled by smaller, cost-effective models, while more complex tasks are escalated to larger, more expensive models.
+This strategy can significantly reduce overall evaluation costs without compromising accuracy\cite{chen2023frugalgpt}.
+At the same time, ARJudge optimizes the trade-off between evaluation quality and computational expense by dynamically allocating resources based on the prompt characteristics\cite{ar_judge}.
+
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{references}
 
 \end{document}
