@@ -1,6 +1,12 @@
 \documentclass[sigconf, authoryear]{acmart}
 
 \usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{titlesec}
+
+
+\titlespacing*{\subsubsection}{0pt}{*0}{1ex}
 
 %%
 %% \BibTeX command to typeset BibTeX logo in the docs
@@ -188,12 +194,10 @@ Simpler queries are handled by smaller, cost-effective models, while more comple
 This strategy can significantly reduce overall evaluation costs without compromising accuracy\cite{chen2023frugalgpt}.
 At the same time, ARJudge optimizes the trade-off between evaluation quality and computational expense by dynamically allocating resources based on the prompt characteristics\cite{ar_judge}.
 
-\subsection{Established Techniques for Bias Mitigation}\label{subsec:established-techniques-for-bias-mitigation}
+\subsection{Established Techniques for Biases Mitigation}\label{subsec:established-techniques-for-bias-mitigation}
 
 This chapter presents established techniques for mitigating position bias, length bias, and cost-related issues.
-However, the main limitation of each method is that it typically addresses only one of these problems.
 
-\subsubsection{Position Bias}
 
 \textbf{PORTIA} (Position-Oriented Response Transformation and Input Alignment) is an alignment-based system designed to mimic human comparison strategies to calibrate position bias in a lightweight yet effective manner.
 Specifically, PORTIA splits the answers into multiple segments, aligns similar content across candidate answers, and then merges them back into a single prompt for evaluation by LLMs.
@@ -207,23 +211,14 @@ Extensive experiments demonstrate that FairEval successfully alleviates evaluati
 Specifically, the combined calibration strategy using all the components enhances the accuracy of GPT-4 and ChatGPT’s evaluations by up to 14.3\% and 26.9\%, respectively, with a kappa correlation improvement of 0.25 and 0.46.
 However, despite its effectiveness, FairEval's reliance on multiple API calls and partial human intervention may lead to increased computational costs and scalability limitations when applied to large-scale model comparisons\cite{faireval}.
 
-\textbf{Self-Supervised Position Debiasing (SOD)} is a framework for mitigating position bias in LLMs without requiring human-labeled data.
-It generates unsupervised responses using diverse prompting strategies, filters them via an Objective Alignment Module (OAM), and optimizes a joint loss combining task and debiasing objectives.
-Experiments across eight datasets and five tasks show that SOD outperforms existing baselines in reducing lead, relative position, and lexical biases.
-It improves non-biased test performance by up to 2\% in ROUGE-L or accuracy while maintaining comparable performance on biased subsets (often with <0.3\% drop).
-SOD is especially effective in low-resource settings, maintaining strong debiasing with as few as 50 samples.
-Despite its effectiveness, SOD depends on the quality of generated unsupervised data and introduces complexity through multi-stage processing and task-specific tuning\cite{liu2024selfsupervisedpositiondebiasinglarge}.
 
-
-\subsubsection{Length Bias}
-
-\textbf{LC AlpacaEval} addresses this issue by training a logistic regression model on prior annotations from AlpacaEval, factoring in model identity, prompt length, and instruction difficulty.
+\textbf{LC AlpacaEval} addresses length bias issue by training a logistic regression model on prior annotations from AlpacaEval, factoring in model identity, prompt length, and instruction difficulty.
 By neutralizing the response length component during score prediction, this method improves evaluation fairness.
-As a result, it increases Spearman correlation with human preferences (Chatbot Arena) from 0.94 to 0.98, reduces gameability by cutting verbosity-induced win rate fluctuations from up to 41.4 percentage points down to 9.7, and limits adversarial win rate gains from 22.2 to 8.5 points.
+As a result, the automatic evaluation match human opinions better (raising the Spearman correlation with Chatbot Arena from 0.94 to 0.98).
+Moreover, their system is more robust to the fluctuations in the win rate: before, models could change their win rate by as much as 41.4 percentage points just by changing how long their answers were; now, it is 9.7.
+Also, during adversarial attack (attempt to deceive the system by purpose), the win rate only goes up by 8.5 points, instead of 22.2.
 However, LC AlpacaEval's performance is bounded by the scope of its training data; it struggles to generalize effectively to more complex multi-turn tasks and open-ended domains, where human judgment nuances are more difficult to approximate\cite{lc_alpacha}.
 
-
-\subsubsection{Cost Problem}
 
 \textbf{CascadeEval} proposes a cascade-based evaluation mechanism with early abstention, allowing smaller, cheaper LLMs to abstain from answering difficult queries and defer them to stronger models.
 This leads to a 13.0\% average reduction in cost and a 5.0\% drop in error rates across six benchmarks, with only a 4.1\% increase in abstention rates, demonstrating strong performance-cost trade-offs.
@@ -238,26 +233,27 @@ Additionally, its performance gains rely heavily on code execution capabilities,
 \textbf{LLM Cascades with Mixture of Thought Representations} introduce a cost-efficient evaluation framework that strategically combines weak and strong LLMs using answer consistency as a routing signal.
 The system leverages weaker models like GPT-3.5 to produce multiple intermediate reasoning traces—such as Chain-of-Thought (CoT) and Program-of-Thought (PoT)—and accepts their answers when the outputs are sufficiently consistent.
 Experiments on six reasoning benchmarks show that this method maintains accuracy close to full GPT-4 evaluation while reducing total cost by up to 60\%.
-However, the approach assumes that consistency among weaker LLMs correlates with correctness, which may not always hold in complex or adversarial tasks\cite{yue2024largelanguagemodelcascades}.
+However, the approach assumes that consistency among weaker LLMs correlates with correctness, which may not always hold in complex or adversarial tasks.
+Moreover, all the experiments were aimed to testing the capabilities of the system, but not in terms of LLM-as-a-judge \cite{yue2024largelanguagemodelcascades}.
 
-\subsubsection{Final Comparison}
+\subsection{Final Comparison}\label{subsec:final-comparison}
 
-able~\ref{tab:bias-comparison} summarizes the key characteristics of the reviewed approaches with respect to the bias they address, their core methodology, and notable limitations.
+Table~\ref{tab:bias-comparison} summarizes the key characteristics of the reviewed approaches with respect to the bias they address, their core methodology, and notable limitations.
 
-\begin{table}[h]
+
+\begin{table}[H]
 \small
 \centering
 \caption{Comparison of mitigation approaches across evaluation biases}
 \label{tab:bias-comparison}
-\begin{tabular}{|p{2.8cm}|p{1.8cm}|p{3.2cm}|p{4.5cm}|}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{|p{2.6cm}|p{1.6cm}|p{3.0cm}|p{4.2cm}|}
 \hline
 \textbf{Approach} & \textbf{Bias Targeted} & \textbf{Core Technique} & \textbf{Limitations} \\
 \hline
 PORTIA & Position & Input alignment with merged prompt & Not robust when LLM refuses judgment; no codebase; limited by context window \\
 \hline
 FairEval & Position & Score calibration using contextual references & High API usage; partial human dependency; limited scalability \\
-\hline
-SOD & Position & Self-supervised debiasing via contrastive training & Depends on quality of generated data; complex multi-stage pipeline \\
 \hline
 LC AlpacaEval & Length & Logistic regression debiasing verbosity artifacts & Weaker on multi-turn / open-ended tasks; static model, handcrafted features \\
 \hline
@@ -267,7 +263,8 @@ ARJudge & Cost & Code-based adaptive prompting & Fine-tuning and larger model ne
 \hline
 LLM Cascades + MoT & Cost & Consistency check across CoT/PoT reasoning & Assumes agreement = correctness; may fail on adversarial examples \\
 \hline
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
 As observed, current solutions are optimized for specific bias types but fall short of offering a unified remedy.
