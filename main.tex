@@ -228,6 +228,14 @@ Also, during adversarial attack (attempt to deceive the system by purpose), the 
 However, LC AlpacaEval's performance is bounded by the scope of its training data; it struggles to generalize effectively to more complex multi-turn tasks and open-ended domains, where human judgment nuances are more difficult to approximate\cite{lc_alpacha}.
 
 
+\textbf{AdapAlpaca} tackles the length bias problem by adjusting the evaluation setup itself rather than correcting scores post hoc.
+Specifically, it ensures that each model response is compared to a reference response of similar length, by dividing the word count range into intervals (e.g., 0–200, 200–400 words) and prompting GPT-4 to generate responses within those ranges.
+This approach works under the assumption that the final response quality that a judge assign to an answer consist of two elements: \textbf{desirability} (length-independent) and \textbf{information mass} (length-dependent).
+The presented benchmark shows that the average difference between its win rates and human preferences is just \textit{0.99\%}, compared to \textit{+24.35\%} for concise responses and \textit{+4.22\%} for detailed responses under the standard AlpacaEval metric.
+However, its reliance on fixed-length generation assumes that quality can be preserved across word counts.
+Moreover, the method still depends on GPT-4 for reference generation and annotation\cite{hu2024explaininglengthbiasllmbased}.
+
+
 \textbf{CascadeEval} proposes a cascade-based evaluation mechanism with early abstention, allowing smaller, cheaper LLMs to abstain from answering difficult queries and defer them to stronger models.
 This leads to a 13.0\% average reduction in cost and a 5.0\% drop in error rates across six benchmarks, with only a 4.1\% increase in abstention rates, demonstrating strong performance-cost trade-offs.
 However, the method requires careful calibration of confidence thresholds and may depend on benchmark-specific tuning\cite{cascade_eval}.
@@ -265,7 +273,9 @@ FairEval & Position & Score calibration using contextual references & High API u
 \hline
 ZEPO & Not specified & Zero-shot prompt optimization for fairness-based preference calibration & Basic optimizer limits performance gains \\
 \hline
-LC AlpacaEval & Length & Logistic regression debiasing verbosity artifacts & Weaker on multi-turn / open-ended tasks; static model, handcrafted features \\
+LC AlpacaEval & Length & Logistic regression debiasing verbosity artifacts & Annotator dependency; the same quality assumption \\
+\hline
+AdapAlpaca & Length & Match the model's reply with the similar size reference &  \\
 \hline
 CascadeEval & Cost & Cascaded abstention with fallback to strong models & Needs careful confidence threshold tuning; benchmark-dependent \\
 \hline
