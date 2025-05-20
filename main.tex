@@ -205,6 +205,12 @@ Extensive experiments demonstrate that FairEval successfully alleviates evaluati
 Specifically, the combined calibration strategy using all the components enhances the accuracy of GPT-4 and ChatGPT’s evaluations by up to 14.3\% and 26.9\%, respectively, with a kappa correlation improvement of 0.25 and 0.46.
 However, despite its effectiveness, FairEval's reliance on multiple API calls and partial human intervention may lead to increased computational costs and scalability limitations when applied to large-scale model comparisons\cite{faireval}.
 
+\textbf{SOD} is a framework for mitigating position bias in LLMs in general without requiring human-labeled data.
+It generates unsupervised responses using diverse prompting strategies, filters them, and optimizes a joint loss combining task and debiasing objectives.
+Experiments across eight datasets and five tasks show that SOD outperforms existing baselines in reducing declared biases.
+For instance, it improves non-biased test performance by up to 2\% in ROUGE-L\@.
+Despite effectiveness, SOD is only partially related to the LLM-as-a-judge task, as it targets position bias in generation rather than evaluating responses through pairwise comparison\cite{liu2024selfsupervisedpositiondebiasinglarge}.
+
 \textbf{LLM-JudgeEval} introduces a systematic framework for evaluating the reliability and bias of LLM-as-a-Judge methods by defining theoretically grounded metrics for accuracy, position bias, and length bias, and mitigating self-inconsistency.
 The authors propose interpretable formulations of position and length biases and quantify internal inconsistencies through a flipping noise model.
 However, while the study defines metrics to measure position and length bias, it does not propose any method to mitigate these biases, instead emphasizing their presence.
@@ -276,31 +282,33 @@ Table~\ref{tab:bias-comparison} summarizes the key characteristics of the review
     \resizebox{\columnwidth}{!}{%
         \begin{tabular}{|p{2.6cm}|p{1.6cm}|p{3.0cm}|p{4.2cm}|}
             \hline
-            \textbf{Approach}  & \textbf{Mitigation Target}       & \textbf{Core Technique}                                                     & \textbf{Limitations}                                                                        \\
+            \textbf{Approach}  & \textbf{Mitigation Target}       & \textbf{Core Technique}                                                         & \textbf{Limitations}                                                                        \\
             \hline
-            PORTIA             & Position bias                    & Input alignment with merged prompt                                          & Not robust when LLM refuses judgment; no codebase; limited by context window                \\
+            PORTIA             & Position bias                    & Input alignment with merged prompt                                              & Not robust when LLM refuses judgment; no codebase; limited by context window                \\
             \hline
-            FairEval           & Position bias                    & Score calibration using contextual references                               & High API usage; partial human dependency; limited scalability                               \\
+            FairEval           & Position bias                    & Score calibration using contextual references                                   & High API usage; partial human dependency; limited scalability                               \\
             \hline
-            LLM-JudgeEval      & Position bias \& length bias     & Definitions of accuracy and bias metrics and their calculations             & The mitigation approach isn't introduced; the framework only emphasis the biases            \\
+            SOD                & Position bias                    & Self-supervised debiasing via generating unsupervised responses and fine-tuning & The approach isn't related to LLM-as-a-judge pairwise comparison                            \\
             \hline
-            ZEPO               & Not specified                    & Zero-shot prompt optimization for fairness-based preference calibration     & Basic optimizer limits performance gains                                                    \\
+            LLM-JudgeEval      & Position bias \& length bias     & Definitions of accuracy and bias metrics and their calculations                 & The mitigation approach isn't introduced; the framework only emphasis the biases            \\
             \hline
-            G-Eval             & Not specified                    & Usage of chain-of-thought prompting and a form-filling paradigm             & Favor bias of self-generated outputs                                                        \\
+            ZEPO               & Not specified                    & Zero-shot prompt optimization for fairness-based preference calibration         & Basic optimizer limits performance gains                                                    \\
             \hline
-            Bias-Mitigation    & Not specified (superficial bias) & Bias calibration with instruction-tuned model or fine-tuning                & Not specified on the position and length biases problems (incomparable                      \\
+            G-Eval             & Not specified                    & Usage of chain-of-thought prompting and a form-filling paradigm                 & Favor bias of self-generated outputs                                                        \\
             \hline
-            LC AlpacaEval      & Length bias                      & Logistic regression debiasing verbosity artifacts                           & Annotator dependency; the same quality assumption                                           \\
+            Bias-Mitigation    & Not specified (superficial bias) & Bias calibration with instruction-tuned model or fine-tuning                    & Not specified on the position and length biases problems (incomparable                      \\
             \hline
-            AdapAlpaca         & Length bias                      & Match the model's reply with the similar size reference                     & Fixed-length responses must preserve quality, relies on the state-of-art-model as annotator \\
+            LC AlpacaEval      & Length bias                      & Logistic regression debiasing verbosity artifacts                               & Annotator dependency; the same quality assumption                                           \\
             \hline
-            CascadeEval        & Cost problem                     & Cascaded abstention with fallback to strong models                          & Needs careful confidence threshold tuning; benchmark-dependent                              \\
+            AdapAlpaca         & Length bias                      & Match the model's reply with the similar size reference                         & Fixed-length responses must preserve quality, relies on the state-of-art-model as annotator \\
             \hline
-            Tuned LLM-judges   & Cost problem                     & Multi-fidelity search over 4,480 judge configurations using human-agreement & Prompt sensitivity, stylistic bias, model sizes variability                                 \\
+            CascadeEval        & Cost problem                     & Cascaded abstention with fallback to strong models                              & Needs careful confidence threshold tuning; benchmark-dependent                              \\
             \hline
-            ARJudge            & Cost problem                     & Code-based adaptive prompting                                               & Fine-tuning and larger model needed; less cost-efficient and portable                       \\
+            Tuned LLM-judges   & Cost problem                     & Multi-fidelity search over 4,480 judge configurations using human-agreement     & Prompt sensitivity, stylistic bias, model sizes variability                                 \\
             \hline
-            LLM Cascades + MoT & Cost problem                     & Consistency check across CoT/PoT reasoning                                  & Assumes agreement = correctness; may fail on adversarial examples                           \\
+            ARJudge            & Cost problem                     & Code-based adaptive prompting                                                   & Fine-tuning and larger model needed; less cost-efficient and portable                       \\
+            \hline
+            LLM Cascades + MoT & Cost problem                     & Consistency check across CoT/PoT reasoning                                      & Assumes agreement = correctness; may fail on adversarial examples                           \\
             \hline
         \end{tabular}%
     }
