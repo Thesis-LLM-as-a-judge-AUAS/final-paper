@@ -101,7 +101,43 @@ conference title from your rights confirmation email}{June 03--05,
 
 
 \section{Introduction}
-Here the introduction
+
+
+Over the past five years, the surge in released Large Language Models (LLMs) has gathered enormous attention of the research community.
+To address the challenge of assessing the quality of these new models, three types of benchmarks have been introduced:
+\begin{itemize}
+    \item \textit{Human judgement} - the estimation based on the historical human scores and decisions\cite{chiang2024chatbotarenaopenplatform,liu2025amelostableframeworkarenabased};
+    \item \textit{Ground-truth} - the estimation based on the alignment with the factual ground-truth\cite{hendrycks2021measuringmassivemultitasklanguage,srivastava2023beyond,zeng2024mrgsm8kmetareasoningbenchmarklarge,myrzakhan2024openllmleaderboardmultichoiceopenstylequestions};
+    \item \textit{LLM-as-a-judge} - the estimation based on the decision of another Large Language Model\cite{mtbench,alpaca_eval,zhu2025judgelmfinetunedlargelanguage};
+\end{itemize}
+
+While all the approaches are legitimate, \textbf{LLM-as-a-judge} techniques show the strongest potential, as they are substantially more cost-effective and rapid than analogs that involve human's evaluation \cite{salinas2025tuningllmjudgedesign}.
+Apart from that, these methods are capable of assessing the answers without predefined answers in contrast to the ground-truth frameworks \cite{zhu2025judgelmfinetunedlargelanguage}.
+Nevertheless, the pure LLM-as-a-judge approach and current frameworks still fractionally suffer from distinct sort of biases such as \textit{position} \cite{shi2024judging, li-etal-2024-split, wei2025systematicevaluationllmasajudgellm}, \textit{length} \cite{hu2024explaining, lc_alpacha}, \textit{self-preference} \cite{self-preference}, \textit{transitivity} \cite{xu2025investigatingnontransitivityllmasajudge}, etc.
+Moreover, current systems that relies on state-of-art-model are showing \textit{high expenses} during the evaluation process \cite{cascade_eval,ar_judge,salinas2025tuningllmjudgedesign,yue2024largelanguagemodelcascades}.
+
+This paper is primarily concerned on comparing and integrating mitigation strategies for the following biases and problems within the scope of pairwise comparison:
+\begin{itemize}
+    \item \textit{Position bias} - the tendency of a judge to favor responses based on their position in the prompt regardless the content quality;
+    \item \textit{Length bias} - the proneness of the judge to evaluate longer responses higher without dependence on their quality;
+    \item \textit{Cost-efficiency} - since the most accurate judgments are produced by state-of-the-art models, the resulting API cost may represent a major obstacle to scalability.
+\end{itemize}
+
+The new approach for mitigation the described biases called \textbf{SemenEval} was introduced.
+This approach builds upon and integrates several observed techniques:
+\begin{itemize}
+    \item \textit{FairEval} - mitigates position bias in LLM evaluations through adjusting the model prompting and mixing the order of judged answers \cite{faireval};
+    \item \textit{CascadeEval} - combines fine-tuned judges with GPT-4 using developed confidence-based score to balance cost and evaluation accuracy \cite{cascade_eval};
+    \item \textit{LC AlpacaEval} - debiases evaluations by controlling for length differences using pre-trained logistic regressions with its own loss function \cite{lc_alpacha};
+\end{itemize}
+
+It leverages the strengths of each approach to perform unbiased evaluations based on the \textit{LC Alpaca Win Rate}, while incorporating the cost-effective strategy for mitigating position bias \cite{alpaca_eval, lc_alpacha}.
+
+
+%The main contributions of this paper are following:
+%\begin{itemize}
+%    \item
+%\end{itemize}
 
 
 \section{Related Work}\label{sec:related-work}
@@ -119,19 +155,14 @@ As a result, LLM evaluators have quickly become a central tool for comparing mod
 
 \subsubsection{Evaluation Paradigms}
 
-
 LLM-as-a-Judge evaluations mostly employ two paradigms: pointwise and pairwise evaluations.
 
 \paragraph{Pointwise Evaluation}
-
-
 In pointwise evaluation, an LLM assesses a single response independently, assigning a score based on predefined criteria such as relevance, coherence, or factual accuracy.
 This method is straightforward and allows for fine-grained analysis of individual responses.
 However, it may suffer from inconsistencies due to the subjective nature of scoring and the lack of comparative context \cite{evalgen}.
 
 \paragraph{Pairwise Evaluation}
-
-
 Pairwise evaluation involves presenting the LLM with two responses to the same prompt and asking it to determine which one is better according to specific criteria \cite{liusie2024llmcomparativeassessmentzeroshot}.
 This comparative approach can mitigate some biases inherent in pointwise evaluations and often aligns more closely with human judgment.
 In score-based pairwise comparison, the LLM assigns each response a numerical score based on evaluation criteria such as coherence, helpfulness, or relevance, and then ranks them by comparing the scores \cite{liu2024aligning}.
@@ -158,13 +189,11 @@ It uses GPT-4 as an automatic evaluator to compare model outputs against referen
 AlpacaEval provides win-rate statistics and supports a leaderboard that ranks models accordingly.
 The benchmark has been validated against a substantial set of human annotations, ensuring its reliability and relevance\cite{alpaca_eval}.
 
-\paragraph{Chatbot Arena}
-
-
-Chatbot Arena is a platform that combines human and LLM-based evaluations to rank conversational agents.
-It utilizes pairwise comparisons, where human annotators or LLM judges select the better response between two options.
-The results contribute to an Elo rating system, providing a comprehensive leaderboard that reflects both human and automated assessments.
-Chatbot Arena serves as a valuable resource for understanding the comparative performance of various chatbots in real-world scenarios\cite{mtbench}.
+\paragraph{JudgeLM}
+JudgeLM is a framework that is focused on the judging the ability of LLM to response in open-ended scenarios.
+It leverages pre-fine-tuned models such as Vicuna under the hood as a judge.
+This framework partially supports existing bias-mitigation algorithms such as \textit{swap augmentation} or \textit{reference support}.
+Additionally, it also supports \textit{multimodal inputs} and is capable of evaluating \textit{multi-turn dialogs}.
 
 \subsection{Problems in Current Systems}\label{subsec:problems-in-current-systems}
 
